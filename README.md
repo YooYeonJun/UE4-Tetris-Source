@@ -1,5 +1,7 @@
 # UE4-Tetris-Source
 My Tetris source code
+언리얼4 사용
+MVC 패턴 적용
 
 1. 기능
 * 기본적인 테트리스 기능을 포함
