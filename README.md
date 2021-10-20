@@ -3,6 +3,10 @@
 * 언리얼4 사용
 * MVC 패턴 적용
 
+M : YJBlock, YJTetrisBlock ...
+V : Widget 으로 구성
+C : 
+
 1. 기능
 * 기본적인 테트리스 기능을 포함
 
