@@ -4,7 +4,9 @@
 * MVC 패턴 적용
 
 M : YJBlock
-V : Widget 으로 구성
+
+V : YJBlockWidget
+
 C : YJBlockController
 
 1. 기능
