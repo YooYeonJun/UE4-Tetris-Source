@@ -2,10 +2,7 @@
 * My Tetris source code
 * 언리얼4 사용
 * MVC 패턴 적용
-
-* M : YJBlock
-* V : YJBlockWidget
-* C : YJBlockController
+M : YJBlock / V : YJBlockWidget / C : YJBlockController
 
 1. 기능
 * 기본적인 테트리스 기능을 포함
