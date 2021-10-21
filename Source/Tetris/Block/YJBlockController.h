@@ -7,7 +7,7 @@
 class FYJBlockGrid;
 class UYJBlockGridWidget;
 class FYJTetrisBlock;
-class FYJBlock;
+struct FYJBlock;
 
 enum class EYJMoveDirection : uint8;
 
@@ -45,7 +45,7 @@ private: // Create Block
 	void CreateNewTetrisBlock();
 	void OnCantCreateNewBlock() const;
 
-	void OnRefreshedBlock(const TArray<TSharedRef<FYJBlock>>& RefreshedBlocks);
+	void OnRefreshedBlock(const TArray<FYJBlock>& RefreshedBlocks);
 
 private: // Move Block
 	UFUNCTION()

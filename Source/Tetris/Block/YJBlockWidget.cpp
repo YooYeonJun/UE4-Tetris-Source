@@ -1,12 +1,14 @@
 #include "YJBlockWidget.h"
 #include "../Tetris.h"
+
 #include "Components/Image.h"
 #include "Components/UniformGridPanel.h"
-#include "Blueprint/WidgetTree.h"
 #include "Components/UniformGridSlot.h"
-#include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/TextBlock.h"
+
+#include "Blueprint/WidgetTree.h"
+#include "Blueprint/WidgetLayoutLibrary.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // UYJBlockWidget

@@ -126,13 +126,13 @@ void UYJBlockController::CreateNewTetrisBlock()
 	MoveDown();
 }
 
-void UYJBlockController::OnRefreshedBlock(const TArray<TSharedRef<FYJBlock>>& RefreshedBlocks)
+void UYJBlockController::OnRefreshedBlock(const TArray<FYJBlock>& RefreshedBlocks)
 {
 	UE_LOG(LogYJ, Log, TEXT(__FUNCTION__));
 
 	for (const auto& RefreshedBlock : RefreshedBlocks)
 	{
-		BlockGridWidget->Refresh(RefreshedBlock->GetPosition().Y, RefreshedBlock->GetPosition().X, RefreshedBlock->GetColor());
+		BlockGridWidget->Refresh(RefreshedBlock.Position.Y, RefreshedBlock.Position.X, RefreshedBlock.Color);
 	}
 
 	// SetBlockInfo

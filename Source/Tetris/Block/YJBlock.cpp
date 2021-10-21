@@ -52,14 +52,14 @@ TArray<FIntPoint> FYJTetrisBlock::GetBlockPositions() const
 	BlockPositions.Reserve(BlockNum);
 	for (int32 i = 0; i < BlockNum; i++)
 	{
-		BlockPositions.Add({ Blocks[i].GetPosition() + GetPosition() });
+		BlockPositions.Add({ Blocks[i].Position + GetPosition() });
 	}
 
 	return BlockPositions;
 }
 
 
-FYJTetrisBlock::FYJTetrisBlock(EYJBlockType InBlockType, FIntPoint InStartPos)
+FYJTetrisBlock::FYJTetrisBlock(EYJBlockType InBlockType, const FIntPoint& InStartPos)
 	:BlockType(InBlockType), Position(InStartPos)
 {
 	CreateBlocks();
@@ -124,8 +124,8 @@ void FYJTetrisBlock::CreateBlocks()
 
 	for (int32 i = 0; i < BlockNum; i++)
 	{
-		Blocks[i].SetPosition(BlockPositions[i]);
-		Blocks[i].SetColor(GetColor());
+		Blocks[i].Position = BlockPositions[i];
+		Blocks[i].Color = GetColor();
 	}
 }
 
@@ -139,13 +139,13 @@ void FYJTetrisBlock::Rotate(const FQuat2D& Rotation)
 	FIntPoint Center;
 	for (auto& Block : Blocks)
 	{
-		Center += Block.GetPosition();
+		Center += Block.Position;
 	}
 	Center /= BlockNum;
 
 	for (auto& Block : Blocks)
 	{
-		Block.SetPosition(Rotation.TransformPoint(FVector2D(Block.GetPosition())).IntPoint());
+		Block.Position = Rotation.TransformPoint(FVector2D(Block.Position)).IntPoint();
 	}
 }
 
@@ -162,17 +162,15 @@ void FYJBlockGrid::Init(int32 InRow, int32 InColumn)
 
 void FYJBlockGrid::SetColor(const TArray<FIntPoint>& Positions, const FColor& NewColor)
 {
-	TArray<TSharedRef<FYJBlock>> RefreshedBlocks;
+	TArray<FYJBlock> RefreshedBlocks;
 	RefreshedBlocks.Reserve(Positions.Num());
 
 	for (const auto& Position : Positions)
 	{
-		auto OptionalBlock = GetBlock(Position);
-		if (OptionalBlock.IsSet())
+		if (auto Block = GetBlock(Position))
 		{
-			auto Block = OptionalBlock.GetValue();
-			Block->SetColor(NewColor);
-			RefreshedBlocks.Add(Block);
+			Block->Color = NewColor;
+			RefreshedBlocks.Add(*Block);
 		}
 	}
 
@@ -187,7 +185,7 @@ void FYJBlockGrid::Refresh(const TArray<FIntPoint>& NonedPositions, const TArray
 
 void FYJBlockGrid::BroadcastAllBlockRefreshed() const
 {
-	TArray<TSharedRef<FYJBlock>> RefreshedBlocks;
+	TArray<FYJBlock> RefreshedBlocks;
 	RefreshedBlocks.Reserve(Row * Column);
 
 	for (const auto& Blocks : Block2DArray)
@@ -209,22 +207,18 @@ bool FYJBlockGrid::IsGridOut(const FIntPoint& Position) const
 	return false;
 }
 
-TOptional<TSharedRef<const FYJBlock>> FYJBlockGrid::GetBlock(const FIntPoint& Position) const
+const FYJBlock* FYJBlockGrid::GetBlock(const FIntPoint& Position) const
 {
 	if (IsGridOut(Position))
 	{
-		return TOptional<TSharedRef<const FYJBlock>>();
+		return nullptr;
 	}
-	return Block2DArray[Position.Y][Position.X];
+	return &Block2DArray[Position.Y][Position.X];
 }
 
-TOptional<TSharedRef<FYJBlock>> FYJBlockGrid::GetBlock(const FIntPoint& Position)
+FYJBlock* FYJBlockGrid::GetBlock(const FIntPoint& Position)
 {
-	if (IsGridOut(Position))
-	{
-		return TOptional<TSharedRef<FYJBlock>>();
-	}
-	return Block2DArray[Position.Y][Position.X];
+	return const_cast<FYJBlock*>(AsConst(*this).GetBlock(Position));
 }
 
 bool FYJBlockGrid::CheckBlockCanMoveTo(const TArray<FIntPoint>& CurrBlockPositions, const TArray<FIntPoint>& BlockPositionsToMove) const
@@ -248,11 +242,11 @@ bool FYJBlockGrid::CheckBlockCanMoveTo(const TArray<FIntPoint>& CurrBlockPositio
 bool FYJBlockGrid::IsNoneBlockPosition(const FIntPoint& Position) const
 {
 	const auto Block = GetBlock(Position);
-	if (!Block.IsSet())
+	if (!Block)
 	{
 		return false;
 	}
-	if (FYJBlockStatics::GetBlockNoneColor() == Block.GetValue()->GetColor())
+	if (FYJBlockStatics::GetBlockNoneColor() == Block->Color)
 	{
 		return true;
 	}
@@ -265,11 +259,11 @@ bool FYJBlockGrid::IsBlockExist(const FYJTetrisBlock& TetrisBlock) const
 	for (const FIntPoint& BlockPosition : TetrisBlock.GetBlockPositions())
 	{
 		const auto Block = GetBlock(BlockPosition);
-		if (!Block.IsSet())
+		if (!Block)
 		{
 			continue;
 		}
-		if (FYJBlockStatics::GetBlockNoneColor() != Block.GetValue()->GetColor())
+		if (FYJBlockStatics::GetBlockNoneColor() != Block->Color)
 		{
 			return true;
 		}
@@ -284,7 +278,7 @@ void FYJBlockGrid::ClearAllBlocks()
 	{
 		for (auto& ColumnBlock : RowBlock)
 		{
-			ColumnBlock->SetColor(FYJBlockStatics::GetBlockNoneColor());
+			ColumnBlock.Color = FYJBlockStatics::GetBlockNoneColor();
 		}
 	}
 
@@ -376,7 +370,7 @@ bool FYJBlockGrid::RequestDeleteLine()
 		bool bCanDelete = true;
 		for (int32 ColumnIndex = 0; ColumnIndex < Blocks.Num(); ColumnIndex++)
 		{
-			if (Blocks[ColumnIndex]->GetColor() == FYJBlockStatics::GetBlockNoneColor())
+			if (Blocks[ColumnIndex].Color == FYJBlockStatics::GetBlockNoneColor())
 			{
 				bCanDelete = false;
 				break;
@@ -390,7 +384,7 @@ bool FYJBlockGrid::RequestDeleteLine()
 			{
 				for (auto& Block : Blocks)
 				{
-					Block->SetColor(FYJBlockStatics::GetBlockNoneColor());
+					Block.Color = FYJBlockStatics::GetBlockNoneColor();
 				}
 			}
 
@@ -400,7 +394,7 @@ bool FYJBlockGrid::RequestDeleteLine()
 				auto& UpperRowBlocks = Block2DArray[RowIndex2 - 1];
 				for (int32 ColumnIndex = 0; ColumnIndex < CurrRowBlocks.Num(); ColumnIndex++)
 				{
-					CurrRowBlocks[ColumnIndex]->SetColor(UpperRowBlocks[ColumnIndex]->GetColor());
+					CurrRowBlocks[ColumnIndex].Color = UpperRowBlocks[ColumnIndex].Color;
 				}
 			}
 		}
@@ -432,7 +426,7 @@ void FYJBlockGrid::CreateGrid()
 		Block2DArray[RowIndex].Reserve(Column);
 		for (int32 ColumnIndex = 0; ColumnIndex < Column; ColumnIndex++)
 		{
-			Block2DArray[RowIndex].Add(MakeShared<FYJBlock>(FIntPoint(ColumnIndex, RowIndex), FYJBlockStatics::GetBlockNoneColor()));
+			Block2DArray[RowIndex].Add(FYJBlock{ FIntPoint(ColumnIndex, RowIndex), FYJBlockStatics::GetBlockNoneColor() });
 		}
 	}
 }

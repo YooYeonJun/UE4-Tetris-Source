@@ -2,18 +2,15 @@
 
 #include "CoreMinimal.h"
 
-UENUM()
-enum class EYJBlockType : int8
+enum class EYJBlockType : uint8
 {
-	None = -1,
-	I = 0, L, J, O, S, T, Z,
+	None, I, L, J, O, S, T, Z,
 	Num,
 };
 
-UENUM()
 enum class EYJMoveDirection : uint8
 {
-	Left = 0, Right, Down,
+	Left, Right, Down,
 	Num,
 };
 
@@ -36,22 +33,16 @@ public:
  * 블록 객체 (블록 그리드, 테트리스 블록의 한 부분을 나타냄)
  * 
  */
-class TETRIS_API FYJBlock
+struct TETRIS_API FYJBlock
 {
 public:
-	FYJBlock() = default;
-	virtual ~FYJBlock() = default;
-	FYJBlock(const FIntPoint& InPosition, const FColor& InColor);
-
-	const FIntPoint& GetPosition() const { return Position; }
-	void SetPosition(const FIntPoint& InPosition) { Position = InPosition; }
-
-	const FColor& GetColor() const { return Color; }
-	void SetColor(const FColor& InColor) { Color = InColor; }
-
-private:
 	FIntPoint Position;
 	FColor Color;
+
+public:
+	FYJBlock() = default;
+	~FYJBlock() = default;
+	FYJBlock(const FIntPoint& InPosition, const FColor& InColor);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -68,9 +59,9 @@ public:
 
 public:
 	FYJTetrisBlock() = default;
-	virtual ~FYJTetrisBlock() = default;
+	~FYJTetrisBlock() = default;
 
-	FYJTetrisBlock(EYJBlockType InBlockType, FIntPoint InStartPos);
+	FYJTetrisBlock(EYJBlockType InBlockType, const FIntPoint& InStartPos);
 
 	void CreateBlocks();
 
@@ -118,7 +109,7 @@ public:
 	FIntPoint GetBlockStartPosition() const { return FIntPoint(Column / 2.0f, 0); }
 
 public:
-	DECLARE_EVENT_OneParam(FYJBlockGrid, FOnBlockRefreshed, const TArray<TSharedRef<FYJBlock>>& /** RefreshedBlocks*/);
+	DECLARE_EVENT_OneParam(FYJBlockGrid, FOnBlockRefreshed, const TArray<FYJBlock>& /** RefreshedBlocks*/);
 	FOnBlockRefreshed& OnBlockRefreshed() const { return OnBlockRefreshedEvent; }
 
 protected:
@@ -131,8 +122,8 @@ protected:
 
 private:
 	bool IsGridOut(const FIntPoint& Position) const;
-	TOptional<TSharedRef<const FYJBlock>> GetBlock(const FIntPoint& Position) const;
-	TOptional<TSharedRef<FYJBlock>> GetBlock(const FIntPoint& Position);
+	const FYJBlock* GetBlock(const FIntPoint& Position) const;
+	FYJBlock* GetBlock(const FIntPoint& Position);
 
 	bool CheckBlockCanMoveTo(const TArray<FIntPoint>& CurrBlockPositions, const TArray<FIntPoint>& BlockPositionsToMove) const;
 	bool MoveInternal(FYJTetrisBlock& TetrisBlock, EYJMoveDirection MoveDirection, bool bOnceMove);
@@ -142,7 +133,7 @@ private:
 
 private:
 	int32 Row, Column;
-	TArray<TArray<TSharedRef<FYJBlock>>> Block2DArray;
+	TArray<TArray<FYJBlock>> Block2DArray;
 
 	mutable FOnBlockRefreshed OnBlockRefreshedEvent;
 };
