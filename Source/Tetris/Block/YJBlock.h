@@ -41,7 +41,6 @@ public:
 
 public:
 	FYJBlock() = default;
-	~FYJBlock() = default;
 	FYJBlock(const FIntPoint& InPosition, const FColor& InColor);
 };
 
@@ -59,7 +58,6 @@ public:
 
 public:
 	FYJTetrisBlock() = default;
-	~FYJTetrisBlock() = default;
 
 	FYJTetrisBlock(EYJBlockType InBlockType, const FIntPoint& InStartPos);
 
@@ -92,7 +90,6 @@ class TETRIS_API FYJBlockGrid
 {
 public:
 	FYJBlockGrid() = default;
-	virtual ~FYJBlockGrid() = default;
 
 	void Init(int32 InRow, int32 InColumn);
 
